@@ -1,22 +1,19 @@
 # Machine Learning Models to Predict COVID-19 Vaccinations in Massachusetts
 - [Problem Statement](#Problem-Statement)
+- [Data Dictionary](#Data-Dictionary)
 - [Executive Summary](#Executive-Summary)
-- [project-5-part1.ipynb contents](#project-5-part1.ipynb-contents)
-- [External Research](#External-Research)
-- [Summary & Outlook](#Conclusions-&-Future Steps)
+- [Future Outlook](#Future-Outlook)
+- [Citations](#Citations)
 - [Data Sources](#Data-Sources)
 
+---
 
 ## Problem Statement
-COVID-19 is an emergent disease that forced societies all over the world to shut down, virtualy in every context. With the creation of vaccines to combat the virus, we've moved into the next change where societies will be allowed to reopen. The ability to predict the progress of COVID-19 vaccination campagins is crucial to governments in order to inform decision making regarding policy that aims to repoen society.<br>
+COVID-19 is an emergent disease that forced societies all over the world to shut down, in virtually every context<sup>1</sup>. With the creation of vaccines to combat the virus, we've moved into the next stage where societies will be allowed to reopen. The ability to predict the progress of COVID-19 vaccination campagins is crucial to governments in order to inform decision making regarding policy that aims to repoen society.<br>
 <br>
 The goals for this project was divided in two parts:<br>
-(1) Build various time series forecasting models to predict the number of vaccines that will be administered over in a two week time period. Models will be evaluated using accuracy and MSE, with the best model being used for part two.<br>
+(1) Utilize recurrent neural networks to build various time series forecasting models that predict the number of vaccines that will be administered over a two week time period in Massachusetts, USA. Models will be evaluated using accuracy and MSE, with the best model being used for part two.<br>
 (2) Develop a pipeline to extract, transform, and load raw vaccination data into the production model, and to then visualize the predictions in a streamlit application. Predictions are to be visualized at a county level.<br>
-
-Citations
-<br>
-1: https://github.com/CSSEGISandData/COVID-19
 
 ---
 
@@ -28,65 +25,56 @@ Citations
 |**total_vaccinations_per_hundred**|float|total_vaccinations per 100 people in the total population of the state| 
 |**daily_vaccinations_raw**|float|daily change in the total number of doses administered. It is only calculated for consecutive days. This is a raw measure provided for data checks and transparency, but we strongly recommend that any analysis on daily vaccination rates be conducted using daily_vaccinations instead| 
 |**daily_vaccinations**|float|new doses administered per day (7-day smoothed). For countries that don't report data on a daily basis, we assume that doses changed equally on a daily basis over any periods in which no data was reported. This produces a complete series of daily figures, which is then averaged over a rolling 7-day window| 
-|**daily_vaccinations_per_million**|integer|daily_vaccinations per 1,000,000 people in the total population of the state| 
+|**daily_vaccinations_per_million**|float|daily_vaccinations per 1,000,000 people in the total population of the state| 
 |**people_vaccinated**|float|total number of people who received at least one vaccine dose. If a person receives the first dose of a 2-dose vaccine, this metric goes up by 1. If they receive the second dose, the metric stays the same| 
-|**people_vaccinated_per_hundred**|integer|people_vaccinated per 100 people in the total population of the state| 
-|**people_fully_vaccinated**|integer|total number of people who received all doses prescribed by the vaccination protocol. If a person receives the first dose of a 2-dose vaccine, this metric stays the same. If they receive the second dose, the metric goes up by 1| 
-|**people_fully_vaccinated_per_hundred**|integer|people_fully_vaccinated per 100 people in the total population of the state| 
-|**total_distributed**|integer|cumulative counts of COVID-19 vaccine doses recorded as shipped in CDC's Vaccine Tracking System| 
-|**total_distributed_per_hundred**|integer|cumulative counts of COVID-19 vaccine doses recorded as shipped in CDC's Vaccine Tracking System per 100 people in the total population of the state| 
-|**share_doses_used**|integer|share of vaccination doses administered among those recorded as shipped in CDC's Vaccine Tracking System| 
+|**people_vaccinated_per_hundred**|float|people_vaccinated per 100 people in the total population of the state| 
+|**people_fully_vaccinated**|float|total number of people who received all doses prescribed by the vaccination protocol. If a person receives the first dose of a 2-dose vaccine, this metric stays the same. If they receive the second dose, the metric goes up by 1| 
+|**people_fully_vaccinated_per_hundred**|float|people_fully_vaccinated per 100 people in the total population of the state| 
+|**total_distributed**|float|cumulative counts of COVID-19 vaccine doses recorded as shipped in CDC's Vaccine Tracking System| 
+|**total_distributed_per_hundred**|float|cumulative counts of COVID-19 vaccine doses recorded as shipped in CDC's Vaccine Tracking System per 100 people in the total population of the state| 
+|**share_doses_used**|float|share of vaccination doses administered among those recorded as shipped in CDC's Vaccine Tracking System| 
 
 ---
 
 ## EXECUTIVE SUMMARY
-**Introduction**
+**Introduction** <br>
+The COVID-19 pandemic prevails as an ultimatum to the global economic growth and the wellbeing of society. The global spread of COVID-19 is increasing day by day, creating a larger risk of disease or death as well as a strain on the economy<sup>1</sup>. As of April 18, 2021, there have been 31.7 million cases of COVID-19 in the united states, and 567,000 deaths<sup>1</sup>. As of April 18, 2021, three vaccines had received emergency authorization from the FDA to be used at a population wide level to prevent the contraction and spread of COVID-19 (although the Johnson & Johnson vaccine has been halted in order to investigate severe adverse outcomes)<sup>2</sup>. As of April 18, 2021, 25% of US adults are fully vaccinated. This is significant because the key to returning back to “normal” life is ensuring that the vast majority of the population is vaccinated and has resistance to the virus<sup>2</sup>.<br>
+As of April 18, 2021, about 30% of US adults in Massachussets are fully vaccinated<sup>3</sup>. The state of Massachusetts is in Phase 4 of their reopening plan, which was only reached once there was a vaccine for COVID-19. Although this stage is called the "new normal", there are still a multitude of restrictions on businesses and individuals in the state that prevent life from feeling normal, and there has been little guidance from the state as to when they believe industries will reopen. The better the state of Massachusetts is able to forecast vacinations rates, the better they will be able to inform businesses and individuals when the state will continue to reopen, and in turn, the aforementioned parties will be able to plan accordingly. 
 
-**Methodology**
+**Methodology**<br>
+A data science workflow was implemented to conduct this analysis. Firstly, the problem statement was defined. Next, data scraping was performed by locating a credible dataset. Before beginning any analysis of the data, the  dataset was imported to a Pandas DataFrame. Next, data cleaning was conducted to ensure that all datatypes were accurate and to address any missing data. Using data that only pertained to the state of Massachussets, exploratory data analysis was conducted to evaluate trend, seasonality, and autocorrelation. Once all data was visualized and all statistical summaries were conveyed, recurrent neural networks were built using SimpleRNN, GRU, and LSTM architecture. Once the best models were found with each respective archictecture, the target variable was predicted and compared with the actual dataset. Models were evaluated on prediction accuracy and mean-squared-error (MSE). Finally, well-informed data-driven recommendations for the COVID-19 vaccine predictions were compiled. 
 
-**Significant Findings**
+**Significant Findings**<br>
+- There 6 rows of missing data in the first month of the dataset
+- Daily vaccination data is non-stationary, but is stationary when differenced once.
+- Auto-correlation plot confirms positive trend for daily vaccinations feature
+- RNNs on differenced data returned higher MSE scores
+- RNN that returned the lowest MSE was the SimpleRNN
 
-**Conclusions and Recommendations**
+**Conclusions and Recommendations**<br>
+The SimpleRNN architechture yielded the lowest MSE. All models largely overfit the data. When prediction accuracy was visualized, no model returned an accuracy higher than 7%. This is either due to an error during pre-processing, or because there isn't enough data. The models need to be finetuned before they can be used to accurately predict two-weeks worth of COVID-19 vaccination data in Massachusetts.
 
-A **data science workflow** was implemented to conduct this analysis. Firstly, the **problem statement** was defined—the JHU data needed to determine how to predict COVID-19 deaths. Next, **data scraping** was performed by locating credible sources that housed the appropriate datasets. Before beginning any analysis of the data, each individual dataset was imported to a **Pandas DataFrame**. Next, **data cleaning** was conducted to ensure that all datatypes were accurate and any other errors were fixed. Using all data from a six month period, **exploratory data analysis** was conducted to determine any parameters. Since the COVID-19 datasets contain data from all states, we narrowed our focus and selected Texas data for our analysis and used our findings to perform **data visualization**. Once all data was visualized and all statistical summaries were conveyed, **predictive statistical analysis** was conducted to describe what the distributions were and if any trends appeared in the data.  To confirm and support the observations made, **external research** about the COVID-19 and any other relevant data was conducted. Finally, well-informed **data-driven recommendations** for the COVID-19 were compiled. The most significant finding from our regression model was that confirmed cases and active cases have the largest impact on predicting COVID-19 related deaths.
-
-**Work Flow Elements:**
-- Imports and reading Data
-- Exploratory data analysis
-- Models testing: Null model, linear regression
-- PCA
-- Ridge modeling
-- Lasso modelling
-- Time series modeling
-- Heat map
-- Histograms
-- Boxplots
-- Scatterplots
-- Software requirements: Pandas, Missingno, Sklearn, Matplotlib
-
-### Code Contents:
-- Description of the COVID-19 death data columns
-- Data Import & Cleaning
-- Exploratory Data Analysis
-- Data Visualization
-- Predictive Statistical analysis
-- External Research
-- Summary and Future outlook
+Note - when notebook was re-run, all the values stayed the same besdies the SimpleRNN model. Data will need to be re-evaluated to ensure the SimpleRNN is truly the best model.
 
 ---
 
-## Summary & Outlook:
-We found that the COVID-19 data is indeed important to predict a good score. we have build a regression model to predict the number of deaths caused by COVID-19 over a six-month timeframe. We have identified the variables that contribute the most predictive capabilities in determining COVID-19 deaths. We have used R-squared and RMSE to evaluate our production model.
-
-
-**Future Outlook**
-
-In order to achieve more reliable data-driven predictions, we will focus on the following in the future: multivariate time series analysis that incorporates the important variables identified in the regression model.
-
-Citations
+## Future Outlook
 <br>
-1: https://people.duke.edu/~rnau/411arim.htm
-<br>
-2: https://www.quantstart.com/articles/Autoregressive-Integrated-Moving-Average-ARIMA-p-d-q-Models-for-Time-Series-Analysis/
+In order to achieve an RNN model that is able to predict COVID-19 vaccination data in Massachussets with over 80% accuracy, more data is needed. The GRU and LSTM architecture hyperparameters will be continued to be tuned in order to yield data that is less over-fit with high predicition accuracy. Once a model can accurately predict COVID-19 vaccinations, an application will be built that visualizes these predictions at the county level in Massachusetts.
 
 ---
+
+## Citations
+<br>
+1: https://covid.cdc.gov/covid-data-tracker/#datatracker-home
+<br>
+2: https://www.fda.gov/vaccines-blood-biologics/vaccines/emergency-use-authorization-vaccines-explained
+<br>
+3: https://www.mass.gov/info-details/reopening-massachusetts
+<br>
+
+---
+
+## Data Sources
+Data was taken from the "Our World in Data" (OWID) repository in GitHub. OWID pulls data from the CDC and from Johns Hopkins University.
+- https://github.com/owid/covid-19-data
